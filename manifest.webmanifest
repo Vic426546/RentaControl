@@ -1,0 +1,12 @@
+{
+  "name":"RentaControl",
+  "short_name":"RentaControl",
+  "description":"Administración de inmuebles, rentas, cobros, gastos, depósitos y documentos.",
+  "start_url":"./",
+  "scope":"./",
+  "display":"standalone",
+  "background_color":"#f4f7fa",
+  "theme_color":"#173f5f",
+  "lang":"es-MX",
+  "icons":[{"src":"./icons/icon.svg","sizes":"any","type":"image/svg+xml","purpose":"any maskable"}]
+}
