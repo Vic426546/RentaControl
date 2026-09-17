@@ -25,8 +25,8 @@
 
    // Hotfix 4.2.1: reparar claves vacías antes de cualquier sincronización.
    html=html.replace(
-     "try{\n    const snap=cloneJson(state), shadow=cloudShadow||{properties:[],tenants:[],leases:[],charges:[],payments:[],expenses:[],deposits:[],documents:[],settings:{}};",
-     "try{\n    state.properties.forEach(p=>{if(!String(p.code||'').trim())p.code=String(p.name||'INMUEBLE').trim()||'INMUEBLE';});\n    const snap=cloneJson(state), shadow=cloudShadow||{properties:[],tenants:[],leases:[],charges:[],payments:[],expenses:[],deposits:[],documents:[],settings:{}};"
+     "try{\\n    const snap=cloneJson(state), shadow=cloudShadow||{properties:[],tenants:[],leases:[],charges:[],payments:[],expenses:[],deposits:[],documents:[],settings:{}};",
+     "try{\\n    state.properties.forEach(p=>{if(!String(p.code||'').trim())p.code=String(p.name||'INMUEBLE').trim()||'INMUEBLE';});\\n    const snap=cloneJson(state), shadow=cloudShadow||{properties:[],tenants:[],leases:[],charges:[],payments:[],expenses:[],deposits:[],documents:[],settings:{}};"
    );
 
    // Hotfix 4.2.1: recuperar la prueba local que quedó pendiente por el error de clave vacía.
@@ -58,10 +58,38 @@
      }`
    );
 
+   // Hotfix 4.2.2: menú móvil completo con acceso a todos los módulos.
+   html=html.replace(
+     ".bottom-nav{display:none}",
+     `.bottom-nav{display:none}.mobile-more-menu{display:none}.mobile-more-menu.show{display:grid;position:fixed;left:10px;right:10px;bottom:76px;z-index:40;background:#fff;border:1px solid var(--line);border-radius:18px;padding:10px;grid-template-columns:repeat(2,1fr);gap:6px;box-shadow:0 18px 48px rgba(16,47,73,.22)}.mobile-more-menu button{border:0;background:#f7f9fb;color:var(--text);padding:13px 12px;border-radius:12px;text-align:left;font-weight:650;display:flex;gap:9px;align-items:center}.mobile-more-menu button.active{background:#eaf3f9;color:var(--primary)}.mobile-more-backdrop{display:none;position:fixed;inset:0;z-index:35;background:rgba(12,31,47,.22)}.mobile-more-backdrop.show{display:block}`
+   );
+   html=html.replace(
+     `  const bottom=document.getElementById('bottomNav');
+  const mobile=NAV.filter(x=>['dashboard','properties','leases','payments','expenses'].includes(x[0]));
+  bottom.innerHTML=mobile.map(([id,ico,label])=>\`<button data-view="${id}" class="${currentView===id?'active':''}"><span class="nav-icon">${ico}</span>${label}</button>\`).join('');
+  bottom.querySelectorAll('button').forEach(b=>b.onclick=()=>navigate(b.dataset.view));`,
+     `  const bottom=document.getElementById('bottomNav');
+  const mobile=NAV.filter(x=>['dashboard','properties','leases','payments'].includes(x[0]));
+  const moreIds=['calendar','tenants','expenses','deposits','documents','reports','settings'];
+  bottom.innerHTML=mobile.map(([id,ico,label])=>\`<button data-view="${id}" class="${currentView===id?'active':''}"><span class="nav-icon">${ico}</span>${label}</button>\`).join('')+\`<button type="button" id="mobileMoreBtn" class="${moreIds.includes(currentView)?'active':''}"><span class="nav-icon">⋯</span>Más</button>\`;
+  bottom.querySelectorAll('button[data-view]').forEach(b=>b.onclick=()=>{closeMobileMore();navigate(b.dataset.view)});
+  let backdrop=document.getElementById('mobileMoreBackdrop');
+  if(!backdrop){backdrop=document.createElement('div');backdrop.id='mobileMoreBackdrop';backdrop.className='mobile-more-backdrop';document.body.appendChild(backdrop);backdrop.onclick=closeMobileMore;}
+  let menu=document.getElementById('mobileMoreMenu');
+  if(!menu){menu=document.createElement('div');menu.id='mobileMoreMenu';menu.className='mobile-more-menu';document.body.appendChild(menu);}
+  menu.innerHTML=NAV.filter(x=>moreIds.includes(x[0])).map(([id,ico,label])=>\`<button data-more-view="${id}" class="${currentView===id?'active':''}"><span class="nav-icon">${ico}</span>${label}</button>\`).join('');
+  menu.querySelectorAll('button').forEach(b=>b.onclick=()=>{closeMobileMore();navigate(b.dataset.moreView)});
+  const moreBtn=document.getElementById('mobileMoreBtn');if(moreBtn)moreBtn.onclick=()=>{menu.classList.toggle('show');backdrop.classList.toggle('show',menu.classList.contains('show'));};`
+   );
+   html=html.replace(
+     "function navigate(view){currentView=view;currentFilter='all';render();}",
+     "function closeMobileMore(){document.getElementById('mobileMoreMenu')?.classList.remove('show');document.getElementById('mobileMoreBackdrop')?.classList.remove('show');}\nfunction navigate(view){closeMobileMore();currentView=view;currentFilter='all';render();}"
+   );
+
    // Hotfix 4.2.1: la clave/número es obligatoria para inmuebles nuevos o editados.
    html=html.replace(
-     "const name=v('propName').trim();if(!name)return toast('Captura un nombre para el inmueble.');\n  const obj={name,code:v('propCode'),type:v('propType'),furnishing:v('propFurnishing'),status:v('propStatus'),address:v('propAddress'),notes:v('propNotes')};",
-     "const name=v('propName').trim();if(!name)return toast('Captura un nombre para el inmueble.');\n  const code=String(v('propCode')||'').trim();if(!code)return toast('Captura una clave o número para el inmueble.');\n  const duplicate=state.properties.some(x=>x.id!==p?.id&&String(x.code||'').trim().toLowerCase()===code.toLowerCase());if(duplicate)return toast('Ya existe otro inmueble con esa clave o número.');\n  const obj={name,code,type:v('propType'),furnishing:v('propFurnishing'),status:v('propStatus'),address:v('propAddress'),notes:v('propNotes')};"
+     "const name=v('propName').trim();if(!name)return toast('Captura un nombre para el inmueble.');\\n  const obj={name,code:v('propCode'),type:v('propType'),furnishing:v('propFurnishing'),status:v('propStatus'),address:v('propAddress'),notes:v('propNotes')};",
+     "const name=v('propName').trim();if(!name)return toast('Captura un nombre para el inmueble.');\\n  const code=String(v('propCode')||'').trim();if(!code)return toast('Captura una clave o número para el inmueble.');\\n  const duplicate=state.properties.some(x=>x.id!==p?.id&&String(x.code||'').trim().toLowerCase()===code.toLowerCase());if(duplicate)return toast('Ya existe otro inmueble con esa clave o número.');\\n  const obj={name,code,type:v('propType'),furnishing:v('propFurnishing'),status:v('propStatus'),address:v('propAddress'),notes:v('propNotes')};"
    );
 
    document.open();document.write(html);document.close();
