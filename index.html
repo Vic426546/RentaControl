@@ -1,0 +1,15 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RentaControl</title>
+<style>body{font-family:system-ui,-apple-system,Segoe UI,sans-serif;margin:0;background:#f4f7fa;color:#1c2733;display:grid;place-items:center;min-height:100vh}.box{background:white;border:1px solid #dde5ec;border-radius:18px;padding:28px;max-width:480px;box-shadow:0 10px 30px rgba(22,45,67,.08)}.muted{color:#6c7885;font-size:14px}</style>
+<div class="box"><strong>Cargando RentaControl…</strong><p class="muted">Conectando con tu información segura.</p><div id="err" class="muted"></div></div>
+<script>
+(async()=>{
+  try{
+    const files=["./parts/app-00.txt", "./parts/app-01.txt", "./parts/app-02.txt", "./parts/app-03.txt", "./parts/app-04.txt", "./parts/app-05.txt", "./parts/app-06.txt", "./parts/app-07.txt", "./parts/app-08.txt", "./parts/app-09.txt"];
+    const texts=await Promise.all(files.map(f=>fetch(f,{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error(f+' '+r.status);return r.text()})));
+    document.open();document.write(texts.join(''));document.close();
+  }catch(e){document.getElementById('err').textContent='No se pudo cargar la aplicación. Recarga la página. Detalle: '+(e&&e.message||e);}
+})();
+</script>
