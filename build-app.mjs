@@ -99,12 +99,12 @@ html = html.replace(
 );
 html = html.replace(
   'RentaControl 4.2 está conectado a Supabase.',
-  'RentaControl 4.2.4 está conectado a Supabase.'
+  'RentaControl 4.2.5 está conectado a Supabase.'
 );
 
 
 // Hotfix 4.2.4: auditoría financiera — los pagos se revierten, no se borran.
-html = html.replace("function recalcChargePaid(id){const c=charge(id);if(c)c.paidAmount=state.payments.filter(p=>p.chargeId===id).reduce((a,p)=>a+Number(p.amount||0),0)}", "function paymentActive(p){return !p.reversedAt}\\nfunction recalcChargePaid(id){const c=charge(id);if(c)c.paidAmount=state.payments.filter(p=>p.chargeId===id&&paymentActive(p)).reduce((a,p)=>a+Number(p.amount||0),0)}");
+html = html.replace("function recalcChargePaid(id){const c=charge(id);if(c)c.paidAmount=state.payments.filter(p=>p.chargeId===id).reduce((a,p)=>a+Number(p.amount||0),0)}", "function paymentActive(p){return !p.reversedAt}\nfunction recalcChargePaid(id){const c=charge(id);if(c)c.paidAmount=state.payments.filter(p=>p.chargeId===id&&paymentActive(p)).reduce((a,p)=>a+Number(p.amount||0),0)}");
 html = html.replace("function recalcAllChargePaid(){state.charges.forEach(c=>c.paidAmount=state.payments.filter(p=>p.chargeId===c.id).reduce((a,p)=>a+Number(p.amount||0),0))}", "function recalcAllChargePaid(){state.charges.forEach(c=>c.paidAmount=state.payments.filter(p=>p.chargeId===c.id&&paymentActive(p)).reduce((a,p)=>a+Number(p.amount||0),0))}");
 html = html.replace("function paidTotal(){return state.payments.reduce((a,x)=>a+Number(x.amount||0),0)}", "function paidTotal(){return state.payments.filter(paymentActive).reduce((a,x)=>a+Number(x.amount||0),0)}");
 html = html.replace("function paymentsForCharge(chargeId){return state.payments.filter(p=>p.chargeId===chargeId).slice().sort((a,b)=>((b.date||'')+(b.createdAt||'')).localeCompare((a.date||'')+(a.createdAt||'')))}", "function paymentsForCharge(chargeId){return state.payments.filter(p=>p.chargeId===chargeId&&paymentActive(p)).slice().sort((a,b)=>((b.date||'')+(b.createdAt||'')).localeCompare((a.date||'')+(a.createdAt||'')))}");
@@ -130,7 +130,7 @@ if(!html.includes('reversed_at:p.reversedAt')) throw new Error('No se pudo aplic
 html = html.replace("Supabase mantiene la base central; más adelante podremos automatizar también un envío semanal externo.", "Supabase guarda además una instantánea automática semanal de los datos administrativos y conserva aproximadamente 90 días. El Excel y el respaldo completo descargable siguen disponibles como copia adicional.");
 html = html.replaceAll('./icons/icon-192.png','./icons/icon.svg');
 html = html.replaceAll('./icons/icon-512.png','./icons/icon.svg');
-html = html.replace('<title>RentaControl 4.2</title>','<title>RentaControl 4.2.4</title>');
+html = html.replace('<title>RentaControl 4.2</title>','<title>RentaControl 4.2.5</title>');
 
 if(!html.includes('id="mobileMoreBtn"')) throw new Error('No se pudo aplicar el menú móvil');
 if(!html.includes("code:String(p.code||p.name||'INMUEBLE')")) throw new Error('No se pudo aplicar la corrección de clave');
