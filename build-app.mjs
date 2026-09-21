@@ -77,6 +77,31 @@ html = html.replace(
   "const name=v('propName').trim();if(!name)return toast('Captura un nombre para el inmueble.');\n  const code=String(v('propCode')||'').trim();if(!code)return toast('Captura una clave o número para el inmueble.');\n  const duplicate=state.properties.some(x=>x.id!==(p&&p.id)&&String(x.code||'').trim().toLowerCase()===code.toLowerCase());if(duplicate)return toast('Ya existe otro inmueble con esa clave o número.');\n  const obj={name,code,type:v('propType'),furnishing:v('propFurnishing'),status:v('propStatus'),address:v('propAddress'),notes:v('propNotes')};"
 );
 
+
+html = html.replaceAll('Rentar departamento','Rentar inmueble');
+
+html = html.replace(
+  "recorded_at:p.createdAt?new Date(p.createdAt+'T12:00:00').toISOString():nowIso(),amount:Number(p.amount||0),payment_method:p.method||null,reference:p.reference||null,notes:p.notes||null,created_at:p.createdAt?new Date(p.createdAt+'T12:00:00').toISOString():nowIso()",
+  "recorded_at:p.createdAt?(String(p.createdAt).includes('T')?new Date(p.createdAt).toISOString():new Date(p.createdAt+'T12:00:00').toISOString()):nowIso(),amount:Number(p.amount||0),payment_method:p.method||null,reference:p.reference||null,notes:p.notes||null,created_at:p.createdAt?(String(p.createdAt).includes('T')?new Date(p.createdAt).toISOString():new Date(p.createdAt+'T12:00:00').toISOString()):nowIso()"
+);
+
+html = html.replace(
+  "if(changed.length){const {error}=await cloudClient.from(cfg.table).upsert(changed.map(cfg.toDb),{onConflict:'id'});if(error)throw error;}",
+  "if(changed.length){const {error}=await cloudClient.from(cfg.table).upsert(changed.map(cfg.toDb),{onConflict:'id'});if(error)throw new Error(cfg.key+': '+(error.message||error));}"
+);
+html = html.replace(
+  "if(removed.length){const {error}=await cloudClient.from(cfg.table).delete().in('id',removed);if(error)throw error;}",
+  "if(removed.length){const {error}=await cloudClient.from(cfg.table).delete().in('id',removed);if(error)throw new Error(cfg.key+': '+(error.message||error));}"
+);
+html = html.replace(
+  "finally{cloudSyncing=false;if(cloudDirty)cloudSyncTimer=setTimeout(cloudSyncNow,1200);}",
+  "finally{cloudSyncing=false;}"
+);
+html = html.replace(
+  'RentaControl 4.2 está conectado a Supabase.',
+  'RentaControl 4.2.3 está conectado a Supabase.'
+);
+
 html = html.replaceAll('./icons/icon-192.png','./icons/icon.svg');
 html = html.replaceAll('./icons/icon-512.png','./icons/icon.svg');
 html = html.replace('<title>RentaControl 4.2</title>','<title>RentaControl 4.2.3</title>');
