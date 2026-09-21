@@ -127,6 +127,7 @@ html = html.replace("['Fecha real','Fecha de registro','Inmueble','Arrendatario'
 if(!html.includes('function paymentActive(p){return !p.reversedAt}')) throw new Error('No se pudo aplicar auditoría de pagos');
 if(!html.includes('reversed_at:p.reversedAt')) throw new Error('No se pudo aplicar campos de reversión');
 
+html = html.replace("Supabase mantiene la base central; más adelante podremos automatizar también un envío semanal externo.", "Supabase guarda además una instantánea automática semanal de los datos administrativos y conserva aproximadamente 90 días. El Excel y el respaldo completo descargable siguen disponibles como copia adicional.");
 html = html.replaceAll('./icons/icon-192.png','./icons/icon.svg');
 html = html.replaceAll('./icons/icon-512.png','./icons/icon.svg');
 html = html.replace('<title>RentaControl 4.2</title>','<title>RentaControl 4.2.4</title>');
