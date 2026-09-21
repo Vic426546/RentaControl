@@ -1,5 +1,45 @@
-const CACHE='rentacontrol-v4.2.3';
-const SHELL=['./','./index.html','./app.html','./manifest.webmanifest','./icons/icon.svg'];
-self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).then(()=>self.skipWaiting())));
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
-self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;e.respondWith(fetch(e.request).then(r=>{const c=r.clone();caches.open(CACHE).then(x=>x.put(e.request,c)).catch(()=>{});return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match('./app.html')||caches.match('./index.html'))))});
+const CACHE='rentacontrol-v4.2.5';
+const SHELL=['./app.html','./index.html','./manifest.webmanifest','./icons/icon.svg'];
+
+self.addEventListener('install',event=>{
+  event.waitUntil(
+    caches.open(CACHE)
+      .then(cache=>cache.addAll(SHELL))
+      .then(()=>self.skipWaiting())
+  );
+});
+
+self.addEventListener('activate',event=>{
+  event.waitUntil(
+    caches.keys()
+      .then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key))))
+      .then(()=>self.clients.claim())
+  );
+});
+
+self.addEventListener('fetch',event=>{
+  if(event.request.method!=='GET') return;
+
+  if(event.request.mode==='navigate'){
+    event.respondWith(
+      fetch(event.request,{cache:'no-store'})
+        .then(response=>{
+          const copy=response.clone();
+          caches.open(CACHE).then(cache=>cache.put(event.request,copy)).catch(()=>{});
+          return response;
+        })
+        .catch(()=>caches.match('./app.html').then(r=>r||caches.match('./index.html')))
+    );
+    return;
+  }
+
+  event.respondWith(
+    fetch(event.request)
+      .then(response=>{
+        const copy=response.clone();
+        caches.open(CACHE).then(cache=>cache.put(event.request,copy)).catch(()=>{});
+        return response;
+      })
+      .catch(()=>caches.match(event.request))
+  );
+});
