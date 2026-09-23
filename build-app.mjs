@@ -128,6 +128,39 @@ if(!html.includes('function paymentActive(p){return !p.reversedAt}')) throw new 
 if(!html.includes('reversed_at:p.reversedAt')) throw new Error('No se pudo aplicar campos de reversión');
 
 html = html.replace("Supabase mantiene la base central; más adelante podremos automatizar también un envío semanal externo.", "Supabase guarda además una instantánea automática semanal de los datos administrativos y conserva aproximadamente 90 días. El Excel y el respaldo completo descargable siguen disponibles como copia adicional.");
+
+const rc426Decode = path => Buffer.from(fs.readFileSync(path,'utf8').trim(),'base64').toString('utf8');
+html = html.replace(
+  "let currentPaymentMonth = today().slice(0,7);\nlet currentReportPeriod = '12m';",
+  "let currentPaymentMonth = today().slice(0,7);\nlet currentLeasePropertyFilter = 'all';\nlet currentPaymentPropertyFilter = 'all';\nlet currentReportPeriod = '12m';"
+);
+{
+  const helper=rc426Decode('patches/426_helper.b64');
+  const pos=html.indexOf('function uid(');
+  if(pos<0) throw new Error('No se encontró punto de inserción para historial por inmueble');
+  html=html.slice(0,pos)+helper+html.slice(pos);
+}
+function rc426ReplaceFunction(startName,nextName,replacement){
+  const start=html.indexOf('function '+startName+'(');
+  const end=html.indexOf('function '+nextName+'(',start+1);
+  if(start<0||end<0) throw new Error('No se encontró '+startName+' para actualizar');
+  html=html.slice(0,start)+replacement+html.slice(end);
+}
+rc426ReplaceFunction('renderLeases','leaseForm',rc426Decode('patches/426_render_leases.b64'));
+rc426ReplaceFunction('renderPayments','chargeForm',rc426Decode('patches/426_render_payments.b64'));
+html = html.replace(
+  '<button class="btn btn-small btn-secondary" data-docs-prop="${p.id}">Documentos</button>',
+  '<button class="btn btn-small btn-secondary" data-history-prop="${p.id}">Historial</button><button class="btn btn-small btn-secondary" data-docs-prop="${p.id}">Documentos</button>'
+);
+html = html.replace(
+  "document.querySelectorAll('[data-docs-prop]').forEach(b=>b.onclick=()=>{currentDocumentPropertyFilter=b.dataset.docsProp;currentView='documents';render()});",
+  "document.querySelectorAll('[data-history-prop]').forEach(b=>b.onclick=()=>{currentPaymentPropertyFilter=b.dataset.historyProp;currentView='payments';render()});\n document.querySelectorAll('[data-docs-prop]').forEach(b=>b.onclick=()=>{currentDocumentPropertyFilter=b.dataset.docsProp;currentView='documents';render()});"
+);
+html = html.replaceAll('RentaControl 4.2.5','RentaControl 4.2.6');
+if(!html.includes('leasePropertyFilter')) throw new Error('No se aplicó filtro de Rentas por inmueble');
+if(!html.includes('paymentPropertyFilter')) throw new Error('No se aplicó filtro de Cobros por inmueble');
+if(!html.includes('data-history-prop')) throw new Error('No se aplicó acceso a Historial por inmueble');
+
 html = html.replaceAll('./icons/icon-192.png','./icons/icon.svg');
 html = html.replaceAll('./icons/icon-512.png','./icons/icon.svg');
 html = html.replace('<title>RentaControl 4.2</title>','<title>RentaControl 4.2.5</title>');
