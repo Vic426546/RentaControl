@@ -132,7 +132,7 @@ html = html.replace("Supabase mantiene la base central; más adelante podremos a
 const rc426Decode = path => Buffer.from(fs.readFileSync(path,'utf8').trim(),'base64').toString('utf8');
 html = html.replace(
   "let currentPaymentMonth = today().slice(0,7);\nlet currentReportPeriod = '12m';",
-  "let currentPaymentMonth = today().slice(0,7);\nlet currentLeasePropertyFilter = 'all';\nlet currentPaymentPropertyFilter = 'all';\nlet currentReportPeriod = '12m';"
+  "let currentPaymentMonth = today().slice(0,7);\nlet currentLeasePropertyFilter = 'all';\nlet currentPaymentPropertyFilter = 'all';\nlet currentPaymentSummaryView = 'programmed';\nlet currentReportPeriod = '12m';"
 );
 {
   const helper=rc426Decode('patches/426_helper.b64');
@@ -147,7 +147,7 @@ function rc426ReplaceFunction(startName,nextName,replacement){
   html=html.slice(0,start)+replacement+html.slice(end);
 }
 rc426ReplaceFunction('renderLeases','leaseForm',rc426Decode('patches/427_render_leases.b64'));
-rc426ReplaceFunction('renderPayments','chargeForm',rc426Decode('patches/426_render_payments.b64'));
+rc426ReplaceFunction('renderPayments','chargeForm',rc426Decode('patches/428_render_payments.b64'));
 html = html.replace(
   '<button class="btn btn-small btn-secondary" data-docs-prop="${p.id}">Documentos</button>',
   '<button class="btn btn-small btn-secondary" data-history-prop="${p.id}">Historial</button><button class="btn btn-small btn-secondary" data-docs-prop="${p.id}">Documentos</button>'
@@ -156,16 +156,18 @@ html = html.replace(
   "document.querySelectorAll('[data-docs-prop]').forEach(b=>b.onclick=()=>{currentDocumentPropertyFilter=b.dataset.docsProp;currentView='documents';render()});",
   "document.querySelectorAll('[data-history-prop]').forEach(b=>b.onclick=()=>{currentPaymentPropertyFilter=b.dataset.historyProp;currentView='payments';render()});\n document.querySelectorAll('[data-docs-prop]').forEach(b=>b.onclick=()=>{currentDocumentPropertyFilter=b.dataset.docsProp;currentView='documents';render()});"
 );
-html = html.replaceAll('RentaControl 4.2.5','RentaControl 4.2.7');
+html = html.replaceAll('RentaControl 4.2.5','RentaControl 4.2.8');
 if(!html.includes('leasePropertyFilter')) throw new Error('No se aplicó filtro de Rentas por inmueble');
 if(!html.includes('paymentPropertyFilter')) throw new Error('No se aplicó filtro de Cobros por inmueble');
 if(!html.includes('data-history-prop')) throw new Error('No se aplicó acceso a Historial por inmueble');
 if(!html.includes('data-unpay-rent')) throw new Error('No se aplicó Rentas pagadas');
 if(!html.includes('<h3>Rentas pagadas</h3>')) throw new Error('No se aplicó historial claro de rentas pagadas');
+if(!html.includes('data-payment-summary')) throw new Error('No se aplicaron indicadores navegables de Cobros');
+if(!html.includes('currentPaymentSummaryView')) throw new Error('No se aplicó el detalle navegable de Cobros');
 
 html = html.replaceAll('./icons/icon-192.png','./icons/icon.svg');
 html = html.replaceAll('./icons/icon-512.png','./icons/icon.svg');
-html = html.replace('<title>RentaControl 4.2</title>','<title>RentaControl 4.2.7</title>');
+html = html.replace('<title>RentaControl 4.2</title>','<title>RentaControl 4.2.8</title>');
 
 if(!html.includes('id="mobileMoreBtn"')) throw new Error('No se pudo aplicar el menú móvil');
 if(!html.includes("code:String(p.code||p.name||'INMUEBLE')")) throw new Error('No se pudo aplicar la corrección de clave');
