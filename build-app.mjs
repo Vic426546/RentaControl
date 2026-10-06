@@ -147,7 +147,10 @@ function rc426ReplaceFunction(startName,nextName,replacement){
   html=html.slice(0,start)+replacement+html.slice(end);
 }
 rc426ReplaceFunction('renderLeases','leaseForm',rc426Decode('patches/427_render_leases.b64'));
-rc426ReplaceFunction('renderPayments','chargeForm',rc426Decode('patches/428_render_payments.b64'));
+const rc428Payments=rc426Decode('patches/428_render_payments.b64')
+  .replace('.filter(Bolean)])]].sort();','.filter(Boolean)])].sort();')
+  .replace('${propertyAnalysisHtml(currentPaymentPropertyFilter))}','${propertyAnalysisHtml(currentPaymentPropertyFilter)}');
+rc426ReplaceFunction('renderPayments','chargeForm',rc428Payments);
 html = html.replace(
   '<button class="btn btn-small btn-secondary" data-docs-prop="${p.id}">Documentos</button>',
   '<button class="btn btn-small btn-secondary" data-history-prop="${p.id}">Historial</button><button class="btn btn-small btn-secondary" data-docs-prop="${p.id}">Documentos</button>'
@@ -156,7 +159,7 @@ html = html.replace(
   "document.querySelectorAll('[data-docs-prop]').forEach(b=>b.onclick=()=>{currentDocumentPropertyFilter=b.dataset.docsProp;currentView='documents';render()});",
   "document.querySelectorAll('[data-history-prop]').forEach(b=>b.onclick=()=>{currentPaymentPropertyFilter=b.dataset.historyProp;currentView='payments';render()});\n document.querySelectorAll('[data-docs-prop]').forEach(b=>b.onclick=()=>{currentDocumentPropertyFilter=b.dataset.docsProp;currentView='documents';render()});"
 );
-html = html.replaceAll('RentaControl 4.2.5','RentaControl 4.2.8');
+html = html.replaceAll('RentaControl 4.2.5','RentaControl 4.2.9');
 if(!html.includes('leasePropertyFilter')) throw new Error('No se aplicó filtro de Rentas por inmueble');
 if(!html.includes('paymentPropertyFilter')) throw new Error('No se aplicó filtro de Cobros por inmueble');
 if(!html.includes('data-history-prop')) throw new Error('No se aplicó acceso a Historial por inmueble');
@@ -167,7 +170,7 @@ if(!html.includes('currentPaymentSummaryView')) throw new Error('No se aplicó e
 
 html = html.replaceAll('./icons/icon-192.png','./icons/icon.svg');
 html = html.replaceAll('./icons/icon-512.png','./icons/icon.svg');
-html = html.replace('<title>RentaControl 4.2</title>','<title>RentaControl 4.2.8</title>');
+html = html.replace('<title>RentaControl 4.2</title>','<title>RentaControl 4.2.9</title>');
 
 if(!html.includes('id="mobileMoreBtn"')) throw new Error('No se pudo aplicar el menú móvil');
 if(!html.includes("code:String(p.code||p.name||'INMUEBLE')")) throw new Error('No se pudo aplicar la corrección de clave');
