@@ -132,7 +132,7 @@ html = html.replace("Supabase mantiene la base central; más adelante podremos a
 const rc426Decode = path => Buffer.from(fs.readFileSync(path,'utf8').trim(),'base64').toString('utf8');
 html = html.replace(
   "let currentPaymentMonth = today().slice(0,7);\nlet currentReportPeriod = '12m';",
-  "let currentPaymentMonth = today().slice(0,7);\nlet currentLeasePropertyFilter = 'all';\nlet currentPaymentPropertyFilter = 'all';\nlet currentPaymentSummaryView = 'programmed';\nlet currentReportPeriod = '12m';"
+  "let currentPaymentMonth = today().slice(0,7);\nlet currentLeasePropertyFilter = 'all';\nlet currentLeaseSection = 'pending';\nlet currentLeaseRange = '8';\nlet currentPaymentPropertyFilter = 'all';\nlet currentPaymentSummaryView = 'programmed';\nlet currentReportPeriod = '12m';"
 );
 {
   const helper=rc426Decode('patches/426_helper.b64');
@@ -146,7 +146,7 @@ function rc426ReplaceFunction(startName,nextName,replacement){
   if(start<0||end<0) throw new Error('No se encontró '+startName+' para actualizar');
   html=html.slice(0,start)+replacement+html.slice(end);
 }
-rc426ReplaceFunction('renderLeases','leaseForm',rc426Decode('patches/427_render_leases.b64'));
+rc426ReplaceFunction('renderLeases','leaseForm',rc426Decode('patches/430_render_leases.b64'));
 const rc428Payments=rc426Decode('patches/428_render_payments.b64')
   .replace('.filter(Bolean)])]].sort();','.filter(Boolean)])].sort();')
   .replace('${propertyAnalysisHtml(currentPaymentPropertyFilter))}','${propertyAnalysisHtml(currentPaymentPropertyFilter)}');
@@ -159,18 +159,26 @@ html = html.replace(
   "document.querySelectorAll('[data-docs-prop]').forEach(b=>b.onclick=()=>{currentDocumentPropertyFilter=b.dataset.docsProp;currentView='documents';render()});",
   "document.querySelectorAll('[data-history-prop]').forEach(b=>b.onclick=()=>{currentPaymentPropertyFilter=b.dataset.historyProp;currentView='payments';render()});\n document.querySelectorAll('[data-docs-prop]').forEach(b=>b.onclick=()=>{currentDocumentPropertyFilter=b.dataset.docsProp;currentView='documents';render()});"
 );
-html = html.replaceAll('RentaControl 4.2.5','RentaControl 4.2.9');
+html = html.replaceAll('RentaControl 4.2.5','RentaControl 4.3.0');
 if(!html.includes('leasePropertyFilter')) throw new Error('No se aplicó filtro de Rentas por inmueble');
 if(!html.includes('paymentPropertyFilter')) throw new Error('No se aplicó filtro de Cobros por inmueble');
 if(!html.includes('data-history-prop')) throw new Error('No se aplicó acceso a Historial por inmueble');
 if(!html.includes('data-unpay-rent')) throw new Error('No se aplicó Rentas pagadas');
-if(!html.includes('<h3>Rentas pagadas</h3>')) throw new Error('No se aplicó historial claro de rentas pagadas');
+if(!html.includes('data-lease-section="paid"')) throw new Error('No se aplicó la nueva vista de Rentas pagadas');
 if(!html.includes('data-payment-summary')) throw new Error('No se aplicaron indicadores navegables de Cobros');
 if(!html.includes('currentPaymentSummaryView')) throw new Error('No se aplicó el detalle navegable de Cobros');
 
+
+const rent430Css = `
+.lease-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:0 0 14px}.lease-tab{border:1px solid #d9e1e8;background:#fff;border-radius:999px;padding:9px 14px;font-weight:700;cursor:pointer;color:#52606d}.lease-tab span{display:inline-grid;place-items:center;min-width:22px;height:22px;margin-left:5px;padding:0 6px;border-radius:999px;background:#eef2f6;font-size:12px}.lease-tab.active{background:#173f5f;color:#fff;border-color:#173f5f}.lease-tab.active span{background:rgba(255,255,255,.18)}.rent-toolbar-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.rent-toolbar-actions .input{min-width:190px}.rent-kpis{margin-bottom:14px}.rent-week-block{background:#fff;border:1px solid #dde5ec;border-radius:16px;margin:0 0 14px;overflow:hidden}.rent-week-head{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:14px 16px;background:#f7f9fb;border-bottom:1px solid #e6ebf0}.rent-week-head h3{margin:0 0 2px;font-size:16px}.rent-week-block.overdue .rent-week-head{background:#fff6f5}.rent-week-block.current .rent-week-head{background:#f4f8ff}.rent-week-block.next .rent-week-head{background:#f6fbf7}.rent-week-total{text-align:right;white-space:nowrap}.rent-week-total strong{display:block;font-size:17px}.rent-week-total span{font-size:12px;color:#6c7885}.rent-agenda-list{display:grid;gap:0}.rent-agenda-card{--rent-accent:#64748b;display:grid;grid-template-columns:minmax(220px,2fr) minmax(130px,.85fr) minmax(140px,.9fr) auto;gap:14px;align-items:center;padding:13px 14px 13px 16px;border-left:6px solid var(--rent-accent);border-bottom:1px solid #edf1f4;background:#fff}.rent-agenda-card:last-child{border-bottom:0}.rent-agenda-card.overdue{background:#fffafa}.rent-agenda-card.partial{background:#fffcf4}.rent-property-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.rent-color-dot{width:10px;height:10px;border-radius:50%;background:var(--rent-accent);flex:0 0 auto}.rent-agenda-date,.rent-agenda-money{display:flex;flex-direction:column;gap:2px}.rent-agenda-money strong{font-size:18px}.rent-agenda-actions{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.mini-label{font-size:11px;color:#74808c;text-transform:uppercase;letter-spacing:.04em}.rent-future-note{padding:12px 14px;border:1px dashed #cbd5df;border-radius:12px;background:#fafbfc;color:#65717d;margin-top:8px;text-align:center}
+@media(max-width:800px){.rent-toolbar-actions{width:100%}.rent-toolbar-actions .input{flex:1 1 160px;min-width:0}.rent-agenda-card{grid-template-columns:1fr 1fr;gap:10px}.rent-agenda-main{grid-column:1/-1}.rent-agenda-actions{grid-column:1/-1;justify-content:flex-start}.rent-week-head{align-items:flex-start}.rent-week-total{text-align:left}.lease-tabs{overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}.lease-tab{white-space:nowrap}}
+@media(max-width:520px){.rent-agenda-card{grid-template-columns:1fr}.rent-agenda-main,.rent-agenda-actions{grid-column:auto}.rent-week-head{flex-direction:column;gap:8px}.rent-agenda-actions .btn{flex:1}.rent-toolbar-actions{display:grid;grid-template-columns:1fr}.rent-toolbar-actions .btn,.rent-toolbar-actions .input{width:100%}}
+`;
+html = html.replace('</head>','<style>'+rent430Css+'</style></head>');
+
 html = html.replaceAll('./icons/icon-192.png','./icons/icon.svg');
 html = html.replaceAll('./icons/icon-512.png','./icons/icon.svg');
-html = html.replace('<title>RentaControl 4.2</title>','<title>RentaControl 4.2.9</title>');
+html = html.replace('<title>RentaControl 4.2</title>','<title>RentaControl 4.3.0</title>');
 
 if(!html.includes('id="mobileMoreBtn"')) throw new Error('No se pudo aplicar el menú móvil');
 if(!html.includes("code:String(p.code||p.name||'INMUEBLE')")) throw new Error('No se pudo aplicar la corrección de clave');
