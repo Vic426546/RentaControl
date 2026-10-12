@@ -1,4 +1,4 @@
-const CACHE='rentacontrol-v4.3.0';
+const CACHE='rentacontrol-v4.3.1';
 const SHELL=['./app.html','./index.html','./manifest.webmanifest','./icons/icon.svg'];
 
 self.addEventListener('install',event=>{
